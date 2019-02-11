@@ -22,14 +22,17 @@ func main() {
 	}
 	wg.Wait()
 	fmt.Println("Words that appear that once:")
+	w.Lock() //Установка и снятие блокировки доступа к обьекту до и после инераций. Строго говоря, это делать не обязательно, поскольку этот фрагмент выпонится только после обработки всех файлов
 	for word, count := range w.found {
 		if count > 1 {
 			fmt.Printf("%s: %d\n", word, count)
 		}
 	}
+	w.Unlock()
 }
 
 type words struct {
+	sync.Mutex
 	found map[string]int
 }
 
@@ -38,6 +41,8 @@ func newWords() *words {
 }
 
 func (w *words) add(word string, n int) {
+	w.Lock()
+	defer w.Unlock()
 	count, ok := w.found[word]
 	if !ok {
 		w.found[word] = n
